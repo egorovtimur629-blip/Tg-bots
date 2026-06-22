@@ -1,0 +1,128 @@
+import csv
+
+user_id, class_id = input().split()
+
+with open("class_user_link.csv", "r", encoding="utf-8") as file:
+    reader = csv.reader(file)
+    next(reader)
+    class_user_links = list(reader)   
+with open("test_class_user_link.csv", "r", encoding="utf-8") as file:
+    reader = csv.reader(file)   
+    next(reader)
+    test_class_user_links = list(reader)
+with open("task.csv", "r", encoding="utf-8") as file:
+    reader = csv.reader(file)
+    next(reader)
+    tasks = list(reader)  
+with open("task_attempt.csv", "r", encoding="utf-8") as file:
+    reader = csv.reader(file) 
+    next(reader)
+    task_attempts = list(reader)
+with open("test_task_link.csv", "r", encoding="utf-8") as file:
+    reader = csv.reader(file)
+    next(reader)
+    test_task_links = list(reader)
+with open("test_attempt.csv", "r", encoding="utf-8") as file:
+    reader = csv.reader(file)
+    next(reader)
+    test_attempts = list(reader)
+    
+class_user_link_ids = []
+
+for link in class_user_links:
+    if link[1] == class_id and link[2] == user_id:
+        class_user_link_ids.append(link[0])
+
+id_asigned_test = []
+for class_user_id in class_user_link_ids:
+    for link in test_class_user_links:
+        if link[2] == class_user_id:
+            id_asigned_test.append(link[1])
+            test_class_user_link = link[0]
+
+test_attempt_id = None
+for i in test_attempts:
+    if i[1] == test_class_user_link:
+        test_attempt_id = i[0]
+
+last_test_id = id_asigned_test[-1]
+count_answers = 0           
+correct_answers = 0                  
+test_tasks = []
+
+
+for link in test_task_links:
+    if link[1] == last_test_id:
+        task_id = link[2]
+        order_number = link[3]
+            
+        user_answer = ""
+        time_spent = 0
+        correct_answer = ""
+            
+        for i in task_attempts:
+            if i[1] == task_id and i[2] == test_attempt_id:
+                user_answer = i[3]
+            
+        for i in tasks:
+            if i[0] == task_id:
+                correct_answer = i[2]    
+                  
+        if not user_answer.strip():
+            flag_task = "?"
+        elif user_answer == correct_answer:
+            flag_task = "TRUE"
+            correct_answers += 1
+            count_answers += 1
+        else:
+            flag_task = "FALSE"
+            count_answers += 1
+                
+        for i in task_attempts:
+            if task_id == i[1] and i[2] == test_attempt_id:
+                time_spent = int(i[5]) if i[5] else 0
+                
+        data = {
+            "test_id": last_test_id,
+            "order_number": order_number,
+            "flag_task": flag_task,
+            "task_id": task_id,
+            "time_spent": time_spent
+        }
+            
+        test_tasks.append(data)
+           
+print(f"{round(count_answers / len(test_tasks) * 100, 1)}% {round(correct_answers / count_answers * 100, 1)}%") 
+
+count = 0
+for test in test_tasks:
+    print(f"{test['order_number']} {test['flag_task']} {test['task_id']}") 
+    count += test["time_spent"]
+
+hours, remainder = divmod(count, 3600)
+minutes, seconds = divmod(remainder, 60)
+print(f"{hours:02d}:{minutes:02d}:{seconds:02d}")
+
+
+
+
+
+
+            
+
+                
+
+    
+
+
+
+
+    
+
+
+
+
+
+
+
+    

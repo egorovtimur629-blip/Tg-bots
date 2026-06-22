@@ -1,0 +1,69 @@
+import csv
+from datetime import datetime
+
+user_id, class_id = input().split()
+
+with open("class_user_link.csv", "r", encoding="utf-8") as file:
+    reader = csv.reader(file)
+    next(reader)
+    class_user_links = list(reader)   
+with open("test_class_user_link.csv", "r", encoding="utf-8") as file:
+    reader = csv.reader(file)   
+    next(reader)
+    test_class_user_links = list(reader)
+with open("test_attempt.csv", "r", encoding="utf-8") as file:
+    reader = csv.reader(file)
+    next(reader)
+    test_attempts = list(reader)
+with open("test.csv", "r", encoding="utf-8") as file:
+    reader = csv.reader(file)
+    next(reader)
+    tests = list(reader)    
+    
+tests = {test[0]: test[1] for test in tests}  
+
+class_user_link_ids = []
+
+for link in class_user_links:
+    if link[1] == class_id and link[2] == user_id:
+        class_user_link_ids.append(link[0])
+    
+  
+asigned_test = []
+complited_test = 0      
+for class_user_link_id in class_user_link_ids:
+    for link in test_class_user_links:
+        if link[2] == class_user_link_id:
+            test_id = link[1]
+            test_class_user_id = link[0]
+            datetime_started = datetime.strptime(link[3], "%d.%m.%Y %H:%M:%S")
+            
+            test_name = tests.get(test_id, "Unknown test")
+            
+            for i in test_attempts:
+                if i[1] == test_class_user_id:
+                    if i[2] == "TRUE":
+                        flag_is_finished = "TRUE"
+                        complited_test += 1
+                    else:
+                        flag_is_finished = "FALSE"
+            
+            test = {
+                "test_name": test_name,
+                "datetime_started": datetime_started,
+                "flag_is_finished": flag_is_finished
+            }
+
+            if len(asigned_test) == 0:
+                    asigned_test.append(test)
+            else:
+                for i, link in enumerate(asigned_test[::-1]):
+                    if test["datetime_started"] > link["datetime_started"]:
+                        asigned_test.insert(i, test)
+                    else:
+                        asigned_test.insert(0, test)
+                    
+print(f"{complited_test}/{len(asigned_test)}")
+
+for test in asigned_test:
+    print(f"{test['test_name']} {test['datetime_started'].strftime('%d.%m.%y')} {test['flag_is_finished']}")
